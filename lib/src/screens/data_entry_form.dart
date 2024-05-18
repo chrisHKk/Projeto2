@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
+import 'dart:convert';
+//import'package:intl/intl.dart';
 
 class DataEntryForm extends StatefulWidget {
-  const DataEntryForm({super.key});
+const DataEntryForm({Key? key}) : super(key: key);
 
   @override
   State<DataEntryForm> createState() => _DataEntryFormState();
@@ -42,7 +45,7 @@ class _DataEntryFormState extends State<DataEntryForm> {
               ),
               TextFormField(
                 controller: _floatController,
-                decoration: const InputDecoration(labelText: 'Valor (float)'),
+                decoration: const InputDecoration(labelText: 'Valor do quarto'),
                 keyboardType:
                     const TextInputType.numberWithOptions(decimal: true),
                 validator: (value) {
@@ -126,7 +129,7 @@ class _DataEntryFormState extends State<DataEntryForm> {
                 child: ElevatedButton(
                   onPressed: () {
                     if (_formKey.currentState!.validate()) {
-                      // Process data
+                      _submitForm();
                     }
                   },
                   child: const Text(
@@ -144,4 +147,68 @@ class _DataEntryFormState extends State<DataEntryForm> {
       ),
     );
   }
+Future<void> _submitForm() async {
+  if (_formKey.currentState?.validate() ?? false) {
+    // Verificar quartos ocupados
+    final ocupadosResponse = await http.get(
+      Uri.parse('https://pifinal2-default-rtdb.firebaseio.com/reservas.json?orderBy="status"&equalTo="ocupado"'),
+    );
+
+    if (ocupadosResponse.statusCode == 200) {
+      final ocupadosData = json.decode(ocupadosResponse.body) as Map<String, dynamic>;
+
+      if (ocupadosData != null) {
+        final ocupados = ocupadosData.entries.map((entry) => entry.value as Map<String, dynamic>).toList();
+
+        // Verificar se o quarto está ocupado durante o período selecionado
+        final selectedStartDate = DateFormat('dd/MM/yyyy').parse(_dataEntradaController.text);
+        final selectedEndDate = DateFormat('dd/MM/yyyy').parse(_dataSaidaController.text);
+
+        if (ocupados.any((reserva) =>
+            reserva['roomNumber'] == _numeroSelecionado &&
+            (selectedStartDate.isBefore(DateFormat('dd/MM/yyyy').parse(reserva['data de saida'])) &&
+                selectedEndDate.isAfter(DateFormat('dd/MM/yyyy').parse(reserva['data de entrada']))))) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Quarto não disponível para as datas selecionadas')),
+          );
+          return; // Abortar o envio do formulário
+        }
+      }
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Erro ao verificar quartos ocupados')),
+      );
+      return; // Abortar o envio do formulário
+    }
+
+    // Enviar a reserva se o quarto estiver disponível
+    final response = await http.post(
+      Uri.parse('https://pifinal2-default-rtdb.firebaseio.com/reservas.json'),
+      body: json.encode({
+        'name': _nomeController.text,
+        'valor do quarto': _floatController.text,
+        'forma de pagamento': _stringController.text,
+        'data de entrada': _dataEntradaController.text,
+        'quarto': _numeroSelecionado,
+        'data de saida': _dataSaidaController.text,
+        'status': 'ocupado',
+      }),
+    );
+
+    if (response.statusCode == 200) {
+      _nomeController.clear();
+      _floatController.clear();
+      _stringController.clear();
+      _dataEntradaController.clear();
+      _dataSaidaController.clear();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Reserva enviada com sucesso!')),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Erro ao enviar a reserva')),
+      );
+    }
+  }
+}
 }
