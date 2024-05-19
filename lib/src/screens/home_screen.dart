@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
-import 'dart:convert';
+//import 'package:http/http.dart' as http;
+//import 'dart:convert';
 import 'package:tela/src/screens/data_entry_form.dart';
+import 'package:tela/src/screens/quartos_livres_screen.dart';
+import 'package:tela/src/screens/quartos_ocupados_screen.dart';
+//import 'package:tela/src/screens/detalhes_reserva_screen.dart'; // Nova importação
 
 class HomeScreen extends StatefulWidget {
   @override
@@ -11,9 +14,10 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   int _selectedIndex = 0;
 
-  static const List<Widget> _widgetOptions = <Widget>[
+  static List<Widget> _widgetOptions = <Widget>[
     Text('Cadastrar Reserva'),
-    Text('Quartos Livres'),
+    QuartosLivresScreen(),
+    QuartosOcupadosScreen(),
     Text('Excluir Reserva'),
     Text('Chatboot'),
   ];
@@ -65,54 +69,10 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ],
         currentIndex: _selectedIndex,
-        selectedItemColor: Colors.green[900], // Cor verde escuro
-        unselectedItemColor: Colors.black, // Cor preta para os ícones não selecionados
+        selectedItemColor: Colors.green[900],
+        unselectedItemColor: Colors.black,
         onTap: (index) => _onItemTapped(context, index),
       ),
-    );
-  }
-}
-
-class QuartosOcupadosScreen extends StatelessWidget {
-  Future<List<Map<String, dynamic>>> _fetchQuartosOcupados() async {
-    final response = await http.get(
-      Uri.parse('https://pifinal2-default-rtdb.firebaseio.com/reservas.json?orderBy="status"&equalTo="ocupado"'),
-    );
-
-    if (response.statusCode == 200) {
-      final data = json.decode(response.body) as Map<String, dynamic>;
-      return data.entries.map((entry) => entry.value as Map<String, dynamic>).toList();
-    } else {
-      throw Exception('Erro ao carregar dados');
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return FutureBuilder<List<Map<String, dynamic>>>(
-      future: _fetchQuartosOcupados(),
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return Center(child: CircularProgressIndicator());
-        }
-
-        if (snapshot.hasError) {
-          return Center(child: Text('Erro ao carregar dados'));
-        }
-
-        if (!snapshot.hasData || snapshot.data!.isEmpty) {
-          return Center(child: Text('Nenhum quarto ocupado'));
-        }
-
-        return ListView(
-          children: snapshot.data!.map((data) {
-            return ListTile(
-              title: Text('Quarto: ${data['roomNumber']}'),
-              subtitle: Text('Nome: ${data['name']}'),
-            );
-          }).toList(),
-        );
-      },
     );
   }
 }

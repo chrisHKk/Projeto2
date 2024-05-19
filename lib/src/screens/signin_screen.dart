@@ -134,9 +134,13 @@ class _SignInScreenState extends State<SignInScreen> {
                               Checkbox(
                                 value: rememberPassword,
                                 onChanged: (bool? value) {
-                                  setState(() {
-                                    rememberPassword = value!;
-                                  });
+                                 
+                                 if (mounted) {
+  setState(() {
+    rememberPassword = value!;
+  });
+}
+                                 
                                 },
                                 activeColor: lightColorScheme.primary,
                               ),
