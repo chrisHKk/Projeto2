@@ -18,7 +18,6 @@ class _HomeScreenState extends State<HomeScreen> {
     Text('Cadastrar Reserva'),
     QuartosLivresScreen(),
     QuartosOcupadosScreen(),
-    Text('Excluir Reserva'),
     Text('Chatboot'),
   ];
 
@@ -58,10 +57,6 @@ class _HomeScreenState extends State<HomeScreen> {
           BottomNavigationBarItem(
             icon: Icon(Icons.hotel),
             label: 'Quartos Ocupados',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.delete),
-            label: 'Excluir Reserva',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.chat),
