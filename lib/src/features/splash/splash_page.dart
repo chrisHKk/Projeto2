@@ -20,7 +20,7 @@ class _SplashPageState extends State<SplashPage> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       setState(() {
         _animationOpacityLogo = 1.0;
-        _scale = 1;
+        _scale = 2;
       });
     });
     super.initState();

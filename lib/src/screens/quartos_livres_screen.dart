@@ -99,6 +99,7 @@ class _QuartosLivresScreenState extends State<QuartosLivresScreen> {
                             dataSaida: reserva['data de saida'],
                             quarto: reserva['quarto'],
                             status: reserva['status'],
+                            descricao: reserva['descricao'],
                           ),
                         ),
                       );

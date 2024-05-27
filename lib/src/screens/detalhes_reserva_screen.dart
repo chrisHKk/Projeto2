@@ -8,6 +8,7 @@ class DetalhesReservaScreen extends StatelessWidget {
   final String dataSaida;
   final int quarto;
   final String status;
+  final String? descricao;
 
   DetalhesReservaScreen({
     required this.nome,
@@ -17,6 +18,7 @@ class DetalhesReservaScreen extends StatelessWidget {
     required this.dataSaida,
     required this.quarto,
     required this.status,
+    this.descricao,
   });
 
   @override
@@ -37,6 +39,7 @@ class DetalhesReservaScreen extends StatelessWidget {
             Text('Data de Saída: $dataSaida', style: TextStyle(fontSize: 18)),
             Text('Quarto: $quarto', style: TextStyle(fontSize: 18)),
             Text('Status: $status', style: TextStyle(fontSize: 18)),
+            Text('Descrição: $descricao', style: TextStyle(fontSize: 18)),
           ],
         ),
       ),

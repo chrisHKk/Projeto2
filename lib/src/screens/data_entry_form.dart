@@ -14,9 +14,9 @@ class _DataEntryFormState extends State<DataEntryForm> {
   final _formKey = GlobalKey<FormState>();
   final _nomeController = TextEditingController();
   final _floatController = TextEditingController();
-  final _stringController = TextEditingController();
   final _dataEntradaController = TextEditingController();
   final _dataSaidaController = TextEditingController();
+  final _descricaoController = TextEditingController();
   int _numeroSelecionado = 1;
   String? _formaPagamentoSelecionada;
 
@@ -73,7 +73,7 @@ class _DataEntryFormState extends State<DataEntryForm> {
                   }
                 },
               ),
-                            TextFormField(
+              TextFormField(
                 controller: _dataSaidaController,
                 decoration: const InputDecoration(labelText: 'Data de Saída'),
                 onTap: () async {
@@ -92,7 +92,7 @@ class _DataEntryFormState extends State<DataEntryForm> {
                   }
                 },
               ),
-              DropdownButtonFormField(
+              DropdownButtonFormField<int>(
                 value: _numeroSelecionado,
                 items: List.generate(12, (index) => index + 1)
                     .map<DropdownMenuItem<int>>((int value) {
@@ -110,7 +110,6 @@ class _DataEntryFormState extends State<DataEntryForm> {
                 },
                 decoration: const InputDecoration(labelText: 'Quarto (1-12)'),
               ),
-
               DropdownButtonFormField<String>(
                 value: _formaPagamentoSelecionada,
                 items: ['Cartão de Crédito', 'Cartão de Débito', 'Dinheiro', 'Pix']
@@ -129,26 +128,30 @@ class _DataEntryFormState extends State<DataEntryForm> {
                 },
                 decoration: const InputDecoration(labelText: 'Forma de Pagamento'),
               ),
-              
+              TextFormField(
+                controller: _descricaoController,
+                decoration: const InputDecoration(labelText: 'Descrição Opcional'),
+                maxLines: 3,
+              ),
               Center(
-  child: Padding(
-    padding: const EdgeInsets.symmetric(vertical: 16.0),
-    child: ElevatedButton(
-      onPressed: () {
-        if (_formKey.currentState!.validate()) {
-          _submitForm();
-        }
-      },
-      child: const Text(
-        'Enviar',
-        style: TextStyle(
-          fontWeight: FontWeight.bold,
-          fontSize: 20,
-        ),
-      ),
-    ),
-  ),
-),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 16.0),
+                  child: ElevatedButton(
+                    onPressed: () {
+                      if (_formKey.currentState!.validate()) {
+                        _submitForm();
+                      }
+                    },
+                    child: const Text(
+                      'Enviar',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 20,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
             ],
           ),
         ),
@@ -156,68 +159,72 @@ class _DataEntryFormState extends State<DataEntryForm> {
     );
   }
 
-Future<void> _submitForm() async {
-  if (_formKey.currentState?.validate() ?? false) {
-    // Verificar quartos ocupados
-    final ocupadosResponse = await http.get(
-      Uri.parse('https://pifinal2-default-rtdb.firebaseio.com/reservas.json?orderBy="status"&equalTo="ocupado"'),
-    );
+  Future<void> _submitForm() async {
+    if (_formKey.currentState?.validate() ?? false) {
+      // Verificar quartos ocupados
+      final ocupadosResponse = await http.get(
+        Uri.parse('https://pifinal2-default-rtdb.firebaseio.com/reservas.json?orderBy="status"&equalTo="ocupado"'),
+      );
 
-    if (ocupadosResponse.statusCode == 200) {
-      final ocupadosData = json.decode(ocupadosResponse.body) as Map<String, dynamic>?;
-      
-      // Map vazio para representar que não há quartos ocupados
-      final List<Map<String, dynamic>> ocupados = ocupadosData?.entries.map((entry) => entry.value as Map<String, dynamic>).toList() ?? [];
+      if (ocupadosResponse.statusCode == 200) {
+        final ocupadosData = json.decode(ocupadosResponse.body) as Map<String, dynamic>?;
 
-      // Verificar se o quarto está ocupado durante o período selecionado
-      final selectedStartDate = DateFormat('dd/MM/yyyy').parse(_dataEntradaController.text);
-      final selectedEndDate = DateFormat('dd/MM/yyyy').parse(_dataSaidaController.text);
+        // Map vazio para representar que não há quartos ocupados
+        final List<Map<String, dynamic>> ocupados = ocupadosData?.entries.map((entry) => entry.value as Map<String, dynamic>).toList() ?? [];
 
-      if (ocupados.any((reserva) =>
-          reserva['quarto'] == _numeroSelecionado &&
-          (selectedStartDate.isBefore(DateFormat('dd/MM/yyyy').parse(reserva['data de saida'])) &&
-              selectedEndDate.isAfter(DateFormat('dd/MM/yyyy').parse(reserva['data de entrada']))))) {
+        // Verificar se o quarto está ocupado durante o período selecionado
+        final selectedStartDate = DateFormat('dd/MM/yyyy').parse(_dataEntradaController.text);
+        final selectedEndDate = DateFormat('dd/MM/yyyy').parse(_dataSaidaController.text);
+
+        if (ocupados.any((reserva) =>
+            reserva['quarto'] == _numeroSelecionado &&
+            (selectedStartDate.isBefore(DateFormat('dd/MM/yyyy').parse(reserva['data de saida'])) &&
+                selectedEndDate.isAfter(DateFormat('dd/MM/yyyy').parse(reserva['data de entrada']))))) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Quarto não disponível para as datas selecionadas')),
+          );
+          return; // Abortar o envio do formulário
+        }
+      } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Quarto não disponível para as datas selecionadas')),
+          SnackBar(content: Text('Erro ao verificar quartos ocupados')),
         );
         return; // Abortar o envio do formulário
       }
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Erro ao verificar quartos ocupados')),
-      );
-      return; // Abortar o envio do formulário
-    }
 
-    // Enviar a reserva se o quarto estiver disponível
-    final response = await http.post(
-      Uri.parse('https://pifinal2-default-rtdb.firebaseio.com/reservas.json'),
-      body: json.encode({
-        'name': _nomeController.text,
-        'valor do quarto': _floatController.text,
-        'forma de pagamento': _stringController.text,
-        'data de entrada': _dataEntradaController.text,
-        'quarto': _numeroSelecionado,
-        'data de saida': _dataSaidaController.text,
-        'status': 'ocupado',
-      }),
-    );
+      // Enviar a reserva se o quarto estiver disponível
+      final response = await http.post(
+        Uri.parse('https://pifinal2-default-rtdb.firebaseio.com/reservas.json'),
+        body: json.encode({
+          'name': _nomeController.text,
+          'valor do quarto': _floatController.text,
+          'forma de pagamento': _formaPagamentoSelecionada,
+          'data de entrada': _dataEntradaController.text,
+          'quarto': _numeroSelecionado,
+          'data de saida': _dataSaidaController.text,
+          'status': 'ocupado',
+          'descricao': _descricaoController.text,
+        }),
+      );
 
-    if (response.statusCode == 200) {
-      _nomeController.clear();
-      _floatController.clear();
-      _stringController.clear();
-      _dataEntradaController.clear();
-      _dataSaidaController.clear();
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Reserva enviada com sucesso!')),
-      );
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Erro ao enviar a reserva')),
-      );
+      if (response.statusCode == 200) {
+        _nomeController.clear();
+        _floatController.clear();
+        _dataEntradaController.clear();
+        _dataSaidaController.clear();
+        _descricaoController.clear();
+        setState(() {
+          _formaPagamentoSelecionada = null;
+          _numeroSelecionado = 1;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Reserva enviada com sucesso!')),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Erro ao enviar a reserva')),
+        );
+      }
     }
   }
-}
-
 }

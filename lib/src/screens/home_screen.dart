@@ -1,10 +1,7 @@
 import 'package:flutter/material.dart';
-//import 'package:http/http.dart' as http;
-//import 'dart:convert';
 import 'package:tela/src/screens/data_entry_form.dart';
 import 'package:tela/src/screens/quartos_livres_screen.dart';
-import 'package:tela/src/screens/quartos_ocupados_screen.dart';
-//import 'package:tela/src/screens/detalhes_reserva_screen.dart'; // Nova importação
+import 'package:tela/src/screens/registro_reservas_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   @override
@@ -17,7 +14,7 @@ class _HomeScreenState extends State<HomeScreen> {
   static List<Widget> _widgetOptions = <Widget>[
     Text('Cadastrar Reserva'),
     QuartosLivresScreen(),
-    QuartosOcupadosScreen(),
+    RegistroReservasScreen(),  // Nome atualizado
     Text('Chatboot'),
   ];
 
@@ -55,8 +52,8 @@ class _HomeScreenState extends State<HomeScreen> {
             label: 'Quartos Livres',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.hotel),
-            label: 'Quartos Ocupados',
+            icon: Icon(Icons.list),
+            label: 'Registro de Reservas',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.chat),
