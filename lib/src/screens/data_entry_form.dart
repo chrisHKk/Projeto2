@@ -24,7 +24,12 @@ class _DataEntryFormState extends State<DataEntryForm> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Reserva'),
+        title: const Text('Reserva',
+         style: TextStyle(
+          color: Colors.white,
+        ),
+        ),
+        backgroundColor: Colors.green[900],
       ),
       body: Form(
         key: _formKey,

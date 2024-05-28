@@ -64,7 +64,14 @@ class _RegistroReservasScreenState extends State<RegistroReservasScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Registro de Reservas'),
+        title: Text(
+          'Registro de Reservas',
+          style: TextStyle(
+            color: Colors.white,
+            ),
+            ),
+              backgroundColor: Colors.green[900],
+              automaticallyImplyLeading: false,
         bottom: PreferredSize(
           preferredSize: Size.fromHeight(48.0),
           child: Padding(

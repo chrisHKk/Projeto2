@@ -129,39 +129,45 @@ class _QuartosLivresScreenState extends State<QuartosLivresScreen> {
     );
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Quartos Livres'),
-        backgroundColor: Colors.green[900],
+@override
+Widget build(BuildContext context) {
+  return Scaffold(
+    appBar: AppBar(
+      title: Text(
+        'Quartos Livres',
+        style: TextStyle(
+          color: Colors.white,
+        ),
       ),
-      body: Column(
-        children: [
-          TableCalendar(
-            firstDay: DateTime.utc(2020, 1, 1),
-            lastDay: DateTime.utc(2030, 12, 31),
-            focusedDay: _focusedDay,
-            selectedDayPredicate: (day) {
-              return isSameDay(_selectedDay, day);
-            },
-            onDaySelected: (selectedDay, focusedDay) {
-              setState(() {
-                _selectedDay = selectedDay;
-                _focusedDay = focusedDay;
-              });
-              _showReservasDialog(selectedDay);
-            },
-            eventLoader: _getReservasForDay,
-            calendarStyle: CalendarStyle(
-              markerDecoration: BoxDecoration(
-                color: Color.fromARGB(255, 255, 95, 3),
-                shape: BoxShape.circle,
-              ),
+      backgroundColor: Colors.green[900],
+      automaticallyImplyLeading: false,
+    ),
+    body: Column(
+      children: [
+        TableCalendar(
+          firstDay: DateTime.utc(2020, 1, 1),
+          lastDay: DateTime.utc(2030, 12, 31),
+          focusedDay: _focusedDay,
+          selectedDayPredicate: (day) {
+            return isSameDay(_selectedDay, day);
+          },
+          onDaySelected: (selectedDay, focusedDay) {
+            setState(() {
+              _selectedDay = selectedDay;
+              _focusedDay = focusedDay;
+            });
+            _showReservasDialog(selectedDay);
+          },
+          eventLoader: _getReservasForDay,
+          calendarStyle: CalendarStyle(
+            markerDecoration: BoxDecoration(
+              color: Color.fromARGB(255, 255, 95, 3),
+              shape: BoxShape.circle,
             ),
           ),
-        ],
-      ),
-    );
-  }
+        ),
+      ],
+    ),
+  );
+}
 }
