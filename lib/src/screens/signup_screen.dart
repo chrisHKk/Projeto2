@@ -314,7 +314,6 @@ Future<void> _signUpWithEmailAndPassword(String email, String password) async {
     );
 
     if (response.statusCode == 200) {
-      // Se o usuário for registrado com sucesso, você pode tomar ações adicionais, se necessário
               Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (context) => SignInScreen()),

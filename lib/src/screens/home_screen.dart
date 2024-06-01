@@ -55,7 +55,7 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.hotel),
-            label: 'Quartos Livres',
+            label: 'Datas Reservadas',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.list),

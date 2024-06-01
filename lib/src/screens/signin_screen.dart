@@ -78,13 +78,13 @@ class _SignInScreenState extends State<SignInScreen> {
                           ),
                           border: OutlineInputBorder(
                             borderSide: const BorderSide(
-                              color: Colors.black12, // Default border color
+                              color: Colors.black12,
                             ),
                             borderRadius: BorderRadius.circular(10),
                           ),
                           enabledBorder: OutlineInputBorder(
                             borderSide: const BorderSide(
-                              color: Colors.black12, // Default border color
+                              color: Colors.black12,
                             ),
                             borderRadius: BorderRadius.circular(10),
                           ),
@@ -111,13 +111,13 @@ class _SignInScreenState extends State<SignInScreen> {
                           ),
                           border: OutlineInputBorder(
                             borderSide: const BorderSide(
-                              color: Colors.black12, // Default border color
+                              color: Colors.black12, 
                             ),
                             borderRadius: BorderRadius.circular(10),
                           ),
                           enabledBorder: OutlineInputBorder(
                             borderSide: const BorderSide(
-                              color: Colors.black12, // Default border color
+                              color: Colors.black12, 
                             ),
                             borderRadius: BorderRadius.circular(10),
                           ),
@@ -136,10 +136,10 @@ class _SignInScreenState extends State<SignInScreen> {
                                 onChanged: (bool? value) {
                                  
                                  if (mounted) {
-  setState(() {
-    rememberPassword = value!;
-  });
-}
+                                  setState(() {
+                                    rememberPassword = value!;
+                                    });
+                                    }
                                  
                                 },
                                 activeColor: lightColorScheme.primary,

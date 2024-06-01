@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-//import 'package:tela/src/screens/home_screen.dart';
 import 'package:tela/src/screens/signup_screen.dart';
 import 'package:tela/src/screens/signin_screen.dart';
 import 'package:tela/src/theme/theme.dart';

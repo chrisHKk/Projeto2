@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'detalhes_reserva_screen.dart';
+import 'editar_reserva_screen.dart'; // Importar a tela de edição
 
 class RegistroReservasScreen extends StatefulWidget {
   @override
@@ -68,10 +69,10 @@ class _RegistroReservasScreenState extends State<RegistroReservasScreen> {
           'Registro de Reservas',
           style: TextStyle(
             color: Colors.white,
-            ),
-            ),
-              backgroundColor: Colors.green[900],
-              automaticallyImplyLeading: false,
+          ),
+        ),
+        backgroundColor: Colors.green[900],
+        automaticallyImplyLeading: false,
         bottom: PreferredSize(
           preferredSize: Size.fromHeight(48.0),
           child: Padding(
@@ -111,51 +112,77 @@ class _RegistroReservasScreenState extends State<RegistroReservasScreen> {
               return ListTile(
                 title: Text('Quarto: ${data['quarto']}'),
                 subtitle: Text('Nome: ${data['name']}'),
-                trailing: IconButton(
-                  icon: Icon(Icons.delete),
-                  onPressed: () async {
-                    final shouldDelete = await showDialog<bool>(
-                      context: context,
-                      builder: (context) {
-                        return AlertDialog(
-                          title: Text('Excluir Reserva'),
-                          content: Text('Tem certeza de que deseja excluir a reserva do quarto ${data['quarto']}?'),
-                          actions: <Widget>[
-                            TextButton(
-                              onPressed: () {
-                                Navigator.of(context).pop(true);
-                              },
-                              child: Text('Sim'),
+                trailing: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: <Widget>[
+                    IconButton(
+                      icon: Icon(Icons.edit),
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => EditarReservaScreen(
+                              id: data['id'],
+                              nome: data['name'] ?? '',
+                              valorQuarto: data['valor do quarto'] ?? '',
+                              formaPagamento: data['forma de pagamento'] ?? '',
+                              dataEntrada: data['data de entrada'] ?? '',
+                              dataSaida: data['data de saida'] ?? '',
+                              quarto: data['quarto'] ?? '',
+                              status: data['status'] ?? '',
+                              descricao: data['descricao'] ?? '', // Verificação e valor padrão
                             ),
-                            TextButton(
-                              onPressed: () {
-                                Navigator.of(context).pop(false);
-                              },
-                              child: Text('Cancelar'),
-                            ),
-                          ],
+                          ),
                         );
                       },
-                    );
+                    ),
+                    IconButton(
+                      icon: Icon(Icons.delete),
+                      onPressed: () async {
+                        final shouldDelete = await showDialog<bool>(
+                          context: context,
+                          builder: (context) {
+                            return AlertDialog(
+                              title: Text('Excluir Reserva'),
+                              content: Text('Tem certeza de que deseja excluir a reserva do quarto ${data['quarto']}?'),
+                              actions: <Widget>[
+                                TextButton(
+                                  onPressed: () {
+                                    Navigator.of(context).pop(true);
+                                  },
+                                  child: Text('Sim'),
+                                ),
+                                TextButton(
+                                  onPressed: () {
+                                    Navigator.of(context).pop(false);
+                                  },
+                                  child: Text('Cancelar'),
+                                ),
+                              ],
+                            );
+                          },
+                        );
 
-                    if (shouldDelete == true) {
-                      await _excluirReserva(context, data['id']);
-                    }
-                  },
+                        if (shouldDelete == true) {
+                          await _excluirReserva(context, data['id']);
+                        }
+                      },
+                    ),
+                  ],
                 ),
                 onTap: () {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
                       builder: (context) => DetalhesReservaScreen(
-                        nome: data['name'],
-                        valorQuarto: data['valor do quarto'],
-                        formaPagamento: data['forma de pagamento'],
-                        dataEntrada: data['data de entrada'],
-                        dataSaida: data['data de saida'],
-                        quarto: data['quarto'],
-                        status: data['status'],
-                        descricao: data['descricao'],
+                        nome: data['name'] ?? '',
+                        valorQuarto: data['valor do quarto'] ?? '',
+                        formaPagamento: data['forma de pagamento'] ?? '',
+                        dataEntrada: data['data de entrada'] ?? '',
+                        dataSaida: data['data de saida'] ?? '',
+                        quarto: data['quarto'] ?? '',
+                        status: data['status'] ?? '',
+                        descricao: data['descricao'] ?? '', 
                       ),
                     ),
                   );

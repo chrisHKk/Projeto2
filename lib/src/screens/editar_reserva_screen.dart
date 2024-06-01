@@ -1,34 +1,101 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'package:intl/intl.dart';
 import 'dart:convert';
+import 'package:intl/intl.dart';
 
-class DataEntryForm extends StatefulWidget {
-  const DataEntryForm({Key? key}) : super(key: key);
+class EditarReservaScreen extends StatefulWidget {
+  final String id;
+  final String nome;
+  final String valorQuarto;
+  final String formaPagamento;
+  final String dataEntrada;
+  final String dataSaida;
+  final int quarto;
+  final String status;
+  final String descricao;
+
+  EditarReservaScreen({
+    required this.id,
+    required this.nome,
+    required this.valorQuarto,
+    required this.formaPagamento,
+    required this.dataEntrada,
+    required this.dataSaida,
+    required this.quarto,
+    required this.status,
+    required this.descricao,
+  });
 
   @override
-  State<DataEntryForm> createState() => _DataEntryFormState();
+  _EditarReservaScreenState createState() => _EditarReservaScreenState();
 }
 
-class _DataEntryFormState extends State<DataEntryForm> {
+class _EditarReservaScreenState extends State<EditarReservaScreen> {
   final _formKey = GlobalKey<FormState>();
-  final _nomeController = TextEditingController();
-  final _floatController = TextEditingController();
-  final _dataEntradaController = TextEditingController();
-  final _dataSaidaController = TextEditingController();
-  final _descricaoController = TextEditingController();
-  int _numeroSelecionado = 1;
-  String? _formaPagamentoSelecionada;
+  late TextEditingController _nomeController;
+  late TextEditingController _valorQuartoController;
+  late TextEditingController _dataEntradaController;
+  late TextEditingController _dataSaidaController;
+  late TextEditingController _descricaoController;
+  late int _quartoSelecionado;
+  late String? _formaPagamentoSelecionada;
+
+  @override
+  void initState() {
+    super.initState();
+    _nomeController = TextEditingController(text: widget.nome);
+    _valorQuartoController = TextEditingController(text: widget.valorQuarto);
+    _dataEntradaController = TextEditingController(text: widget.dataEntrada);
+    _dataSaidaController = TextEditingController(text: widget.dataSaida);
+    _descricaoController = TextEditingController(text: widget.descricao);
+    _quartoSelecionado = widget.quarto;
+    _formaPagamentoSelecionada = widget.formaPagamento;
+  }
+
+  @override
+  void dispose() {
+    _nomeController.dispose();
+    _valorQuartoController.dispose();
+    _dataEntradaController.dispose();
+    _dataSaidaController.dispose();
+    _descricaoController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _editarReserva() async {
+    if (_formKey.currentState?.validate() ?? false) {
+      final response = await http.patch(
+        Uri.parse('https://pifinal2-default-rtdb.firebaseio.com/reservas/${widget.id}.json'),
+        body: json.encode({
+          'name': _nomeController.text,
+          'valor do quarto': _valorQuartoController.text,
+          'forma de pagamento': _formaPagamentoSelecionada,
+          'data de entrada': _dataEntradaController.text,
+          'data de saida': _dataSaidaController.text,
+          'quarto': _quartoSelecionado,
+          'status': widget.status,
+          'descricao': _descricaoController.text,
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Reserva editada com sucesso!')),
+        );
+        Navigator.of(context).pop();
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Erro ao editar a reserva')),
+        );
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Reserva',
-         style: TextStyle(
-          color: Colors.white,
-        ),
-        ),
+        title: Text('Editar Reserva'),
         backgroundColor: Colors.green[900],
       ),
       body: Form(
@@ -49,7 +116,7 @@ class _DataEntryFormState extends State<DataEntryForm> {
                 },
               ),
               TextFormField(
-                controller: _floatController,
+                controller: _valorQuartoController,
                 decoration: const InputDecoration(labelText: 'Valor do quarto'),
                 keyboardType: const TextInputType.numberWithOptions(decimal: true),
                 validator: (value) {
@@ -98,7 +165,7 @@ class _DataEntryFormState extends State<DataEntryForm> {
                 },
               ),
               DropdownButtonFormField<int>(
-                value: _numeroSelecionado,
+                value: _quartoSelecionado,
                 items: List.generate(12, (index) => index + 1)
                     .map<DropdownMenuItem<int>>((int value) {
                   return DropdownMenuItem<int>(
@@ -109,7 +176,7 @@ class _DataEntryFormState extends State<DataEntryForm> {
                 onChanged: (int? newValue) {
                   if (newValue != null) {
                     setState(() {
-                      _numeroSelecionado = newValue;
+                      _quartoSelecionado = newValue;
                     });
                   }
                 },
@@ -142,13 +209,9 @@ class _DataEntryFormState extends State<DataEntryForm> {
                 child: Padding(
                   padding: const EdgeInsets.symmetric(vertical: 16.0),
                   child: ElevatedButton(
-                    onPressed: () {
-                      if (_formKey.currentState!.validate()) {
-                        _submitForm();
-                      }
-                    },
+                    onPressed: _editarReserva,
                     child: const Text(
-                      'Enviar',
+                      'Salvar',
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
                         fontSize: 20,
@@ -162,73 +225,5 @@ class _DataEntryFormState extends State<DataEntryForm> {
         ),
       ),
     );
-  }
-
-  Future<void> _submitForm() async {
-    if (_formKey.currentState?.validate() ?? false) {
-      final ocupadosResponse = await http.get(
-        Uri.parse('https://pifinal2-default-rtdb.firebaseio.com/reservas.json?orderBy="status"&equalTo="ocupado"'),
-      );
-
-      if (ocupadosResponse.statusCode == 200) {
-        final ocupadosData = json.decode(ocupadosResponse.body) as Map<String, dynamic>?;
-
-
-        final List<Map<String, dynamic>> ocupados = ocupadosData?.entries.map((entry) => entry.value as Map<String, dynamic>).toList() ?? [];
-
-
-        final selectedStartDate = DateFormat('dd/MM/yyyy').parse(_dataEntradaController.text);
-        final selectedEndDate = DateFormat('dd/MM/yyyy').parse(_dataSaidaController.text);
-
-        if (ocupados.any((reserva) =>
-            reserva['quarto'] == _numeroSelecionado &&
-            (selectedStartDate.isBefore(DateFormat('dd/MM/yyyy').parse(reserva['data de saida'])) &&
-                selectedEndDate.isAfter(DateFormat('dd/MM/yyyy').parse(reserva['data de entrada']))))) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Quarto não disponível para as datas selecionadas')),
-          );
-          return;
-        }
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Erro ao verificar quartos ocupados')),
-        );
-        return;
-      }
-
-     
-      final response = await http.post(
-        Uri.parse('https://pifinal2-default-rtdb.firebaseio.com/reservas.json'),
-        body: json.encode({
-          'name': _nomeController.text,
-          'valor do quarto': _floatController.text,
-          'forma de pagamento': _formaPagamentoSelecionada,
-          'data de entrada': _dataEntradaController.text,
-          'quarto': _numeroSelecionado,
-          'data de saida': _dataSaidaController.text,
-          'status': 'ocupado',
-          'descricao': _descricaoController.text,
-        }),
-      );
-
-      if (response.statusCode == 200) {
-        _nomeController.clear();
-        _floatController.clear();
-        _dataEntradaController.clear();
-        _dataSaidaController.clear();
-        _descricaoController.clear();
-        setState(() {
-          _formaPagamentoSelecionada = null;
-          _numeroSelecionado = 1;
-        });
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Reserva enviada com sucesso!')),
-        );
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Erro ao enviar a reserva')),
-        );
-      }
-    }
   }
 }
